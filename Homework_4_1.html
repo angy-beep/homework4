@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grafico Payoff Opzioni</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+    }
+    canvas {
+      border: 1px solid black;
+      margin-top: 20px;
+    }
+    .controls {
+      margin: 20px;
+    }
+    .slider-label {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Grafico Payoff Opzioni</h1>
+  
+  <div class="controls">
+    <label class="slider-label">Prezzo di esercizio (Strike Price):</label>
+    <input type="range" id="strikeSlider" min="50" max="150" value="100">
+    <span id="strikeValue">100</span> €
+  </div>
+
+  <div class="controls">
+    <label class="slider-label">Premium:</label>
+    <input type="range" id="premiumSlider" min="0" max="50" value="10">
+    <span id="premiumValue">10</span> €
+  </div>
+
+  <div class="controls">
+    <label class="slider-label">Posizione (Segno):</label>
+    <input type="number" id="positionInput" value="1" min="-1" max="1" step="1">
+    <span id="positionValue">1</span>
+  </div>
+
+  <canvas id="payoffCanvas" width="800" height="400"></canvas>
+
+  <script>
+    // Seleziona gli elementi
+    const strikeSlider = document.getElementById("strikeSlider");
+    const strikeValue = document.getElementById("strikeValue");
+    const premiumSlider = document.getElementById("premiumSlider");
+    const premiumValue = document.getElementById("premiumValue");
+    const positionInput = document.getElementById("positionInput");
+    const positionValue = document.getElementById("positionValue");
+    const payoffCanvas = document.getElementById("payoffCanvas");
+
+    // Funzione per disegnare il grafico
+    function drawChart() {
+      const ctx = payoffCanvas.getContext("2d");
+      ctx.clearRect(0, 0, payoffCanvas.width, payoffCanvas.height);
+
+      const strikePrice = parseInt(strikeSlider.value);
+      const premium = parseInt(premiumSlider.value);
+      const position = parseInt(positionInput.value);
+
+      strikeValue.textContent = strikePrice;
+      premiumValue.textContent = premium;
+      positionValue.textContent = position;
+
+      const originX = 50;
+      const originY = payoffCanvas.height / 2;
+
+      // Disegna gli assi
+      ctx.beginPath();
+      ctx.moveTo(originX, 0);
+      ctx.lineTo(originX, payoffCanvas.height);
+      ctx.moveTo(0, originY);
+      ctx.lineTo(payoffCanvas.width, originY);
+      ctx.strokeStyle = "black";
+      ctx.stroke();
+
+      ctx.font = "12px Arial";
+      ctx.fillText("Prezzo (S)", payoffCanvas.width / 2, payoffCanvas.height - 10);
+      ctx.fillText("Profitto / Perdita", 10, originY - 10);
+
+      // Disegna il payoff per call
+      ctx.beginPath();
+      ctx.strokeStyle = "blue";
+      for (let S = 50; S <= 150; S++) {
+        const x = originX + (S - 50) * 6;
+        const y = originY - position * (Math.max(S - strikePrice, 0) - premium) * 2;
+
+        if (S === 50) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Disegna il payoff per put
+      ctx.beginPath();
+      ctx.strokeStyle = "green";
+      for (let S = 50; S <= 150; S++) {
+        const x = originX + (S - 50) * 6;
+        const y = originY - position * (Math.max(strikePrice - S, 0) - premium) * 2;
+
+        if (S === 50) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    // Eventi per aggiornare il grafico
+    strikeSlider.addEventListener("input", drawChart);
+    premiumSlider.addEventListener("input", drawChart);
+    positionInput.addEventListener("input", drawChart);
+
+    // Disegna il grafico iniziale
+    drawChart();
+  </script>
+</body>
+</html>
